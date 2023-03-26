@@ -15,4 +15,6 @@ public:
   virtual Value get_value(const IToken &operand);
   virtual IExpression infix_to_postfix();
   virtual void put_token(const IToken &t);
+  virtual void read();
+  virtual ErrorCode valid_infix();
 };

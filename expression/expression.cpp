@@ -8,8 +8,15 @@
 #include <iterator>
 #include <map>
 #include <stack>
+#include <sys/types.h>
+#include <vector>
 
 class Expression : public IExpression {
+private:
+  std::vector<IToken> terms;
+  int current_term;
+
+public:
   ErrorCode eval_prefix(Value &result) override {
     IToken t;
     Value theArg, firstArg, seconArg;
@@ -93,7 +100,14 @@ class Expression : public IExpression {
     return SUCCESS;
   }
 
-  ErrorCode get_token(IToken &result) override { return FAILED; };
+  ErrorCode get_token(IToken &result) override {
+    int nTokens = this->terms.size();
+    if (current_term > (nTokens - 1)) {
+      return FAILED;
+    }
+    result = this->terms[current_term++];
+    return SUCCESS;
+  };
 
   IExpression infix_to_postfix() override {
     Expression ans;
@@ -130,12 +144,82 @@ class Expression : public IExpression {
             prior = delayedOps.top();
             if (prior.kind() == LEFTPAREN)
               endRight = true;
-            else if (prior.priority() < curr.priority()) {
+            else if (prior.priority() < curr.priority())
               endRight = true;
-            }
+            else if (curr.priority() == 6)
+              endRight = true;
+            else
+              ans.put_token(prior);
+            if (!endRight)
+              delayedOps.push(curr);
           }
-
         } while (!endRight);
+        delayedOps.push(curr);
+        break;
       }
     }
+    while (!delayedOps.empty()) {
+      prior = delayedOps.top();
+      ans.put_token(prior);
+      delayedOps.pop();
+    }
+    // WHAT THE FUCK: ans.put_token(";");
+    return ans;
   };
+
+  ErrorCode valid_infix() override {
+    IToken curr;
+    bool leading = true;
+    int paren_count = 0;
+    while (this->get_token(curr) != FAILED) {
+      TokenType type = curr.kind();
+      if (type == RIGHTPAREN || type == BINARYOP || type == RIGHTPAREN) {
+        if (leading)
+          return FAILED;
+      } else if (!leading)
+        return FAILED;
+      if (type == LEFTPAREN)
+        paren_count++;
+      else if (type == RIGHTPAREN) {
+        paren_count--;
+        if (paren_count < 0) {
+          return FAILED;
+        }
+      }
+      if (type == BINARYOP || type == UNARYOP || type == LEFTPAREN)
+        leading = true;
+      else
+        leading = false;
+    }
+    if (leading || (paren_count > 0))
+      return FAILED;
+    // ????????????
+    // this->rewind();
+    return SUCCESS;
+  }
+
+  Value do_binary(const IToken &operation, const Value &first_argument,
+                  const Value &second_argument) override {
+    switch (operation.code_number()) {
+    case 17:
+      return first_argument + second_argument;
+    case 18:
+      return first_argument - second_argument;
+    case 19:
+      return first_argument * second_argument;
+    case 20:
+      return first_argument / second_argument;
+    case 21:
+      return first_argument ^ second_argument;
+    }
+  }
+
+  void read() override {
+    std::string input, word;
+    int term_count = 0;
+    int x;
+    std::cin >> input;
+    // GHOST CODE
+    // add_spaces(input)
+  }
+};
