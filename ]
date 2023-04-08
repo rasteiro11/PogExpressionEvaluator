@@ -8,7 +8,10 @@
 #include <map>
 #include <ostream>
 
-static std::map<std::string, ITokenRecord *> lexeme = {
+std::list<int> Token::parameters;
+ILexicon *Token::symbol_table = new Lexicon();
+
+std::map<std::string, ITokenRecord *> lexeme = {
     {";", new TokenRecord(";", EOE, 0)},
     {"(", new TokenRecord("(", LEFTPAREN, 0)},
     {")", new TokenRecord(")", RIGHTPAREN, 0)},
@@ -58,18 +61,30 @@ std::string Token::name() const {
 
 int Token::code_number() const { return this->code; }
 
-// we must have numbers as lexeme
-Token::Token(const std::string &identifier, ILexicon *lexicon) {
-  this->symbol_table = lexicon;
-  if (lexeme.find(identifier) == lexeme.end()) {
-    std::cout << "[token.Token] this lexeme " << identifier
-              << " is not registered in lexeme list" << std::endl;
-    return;
+Token::Token(const std::string &identifier) {
+  std::cout << "TOKEN CTOR" << std::endl;
+  std::cout << "IDENTIFIER:" << identifier << "|" << std::endl;
+  if (lexeme.find(*identifier) == lexeme.end()) {
+    std::cout << "[token.Token] this lexeme is not registered in lexeme list"
+              << std::endl;
+    std::exit(EXIT_FAILURE);
   }
 
-  lexicon->add_symbol(identifier, lexeme[identifier]);
+  this->symbol_table->add_symbol(identifier, lexeme[identifier]);
 }
 
 void Token::set_parameters() {
   std::cout << "THIS SHIT IS NOT IMPLEMENTED YET STFU" << std::endl;
+  // int n = parameters.size();
+  // int index_code;
+  // double x;
+  // for (auto it = parameters.begin(); it != parameters.end(); it++) {
+  //  index_code = *it;
+  //  ITokenRecord *r = &this->symbol_table->get_token_data()[index_code];
+  //  std::cout << "Give a new value for param" << (r->name()).c_str()
+  //            << " with value " << r->value() << std::endl;
+  //  std::cout << "Enter a value or a new line to keep the old value:"
+  //            << std::flush;
+  //  std::cin >> x;
+  //}
 }

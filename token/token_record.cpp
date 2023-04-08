@@ -1,20 +1,18 @@
-#pragma once
+#include "token_record.hpp"
 #include "../lexicon/lexicon.hpp"
 #include "token.hpp"
 #include <iostream>
 
-class TokenRecord : ITokenRecord {
-public:
-  std::string n;
-  int priority;
-  double v;
-  TokenType k;
+TokenRecord::TokenRecord() {}
 
-  TokenType kind() const override { return this->k; }
-  std::string name() const override { return this->n; }
-  double value() const override { return this->v; }
+TokenRecord::TokenRecord(const char *name, TokenType type, double value) {
+  this->n = name;
+  this->k = type;
+  this->v = value;
+}
 
-private:
-  int code;
-  static ILexicon symbol_table;
-};
+TokenType TokenRecord::kind() const { return this->k; }
+
+std::string TokenRecord::name() const { return this->n; }
+
+double TokenRecord::value() const { return this->v; }

@@ -1,12 +1,17 @@
-#pragma once
-#include "../token/token_record.hpp"
-#include <iostream>
+#include "../token/itoken_record.hpp"
+#include "ilexicon.hpp"
+#include <map>
 
-class ILexicon {
+class Lexicon : public ILexicon {
 public:
-  virtual int hash(const std::string &x) const;
-  virtual void set_standard_tokens();
-  virtual int *get_count();
-  virtual int *get_index_code();
-  virtual ITokenRecord *get_token_data();
+  Lexicon();
+  void set_standard_tokens() override;
+  const ITokenRecord *get_token_record(int index_code) override;
+  const void add_symbol(const std::string &identifier,
+                        ITokenRecord *record) override;
+
+private:
+  int count;
+  std::map<int, ITokenRecord *> token_data;
+  std::map<std::string, int> index_code;
 };

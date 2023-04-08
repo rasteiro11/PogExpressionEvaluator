@@ -1,10 +1,20 @@
 #pragma once
-#include "../token/token.hpp"
+#include "../lexicon/ilexicon.hpp"
+#include "./itoken_record.hpp"
 #include <string>
 
-class ITokenRecord {
+class TokenRecord : public ITokenRecord {
 public:
-  virtual TokenType kind() const;
-  virtual std::string name() const;
-  virtual double value() const;
+  TokenRecord();
+  TokenRecord(const char *, TokenType type, double value);
+  TokenType kind() const override;
+  std::string name() const override;
+  double value() const override;
+
+private:
+  int code;
+  std::string n;
+  int priority;
+  double v;
+  TokenType k;
 };
