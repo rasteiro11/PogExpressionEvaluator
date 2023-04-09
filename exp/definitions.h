@@ -1,5 +1,7 @@
 #pragma once
 #include <utility>
+#define FAILURE false
+#define SUCCESS true
 
 using AtributeValue = int;
 using Priority = int;

@@ -1,12 +1,13 @@
 #include "exp/expression.h"
 #include "exp/token.h"
 #include <array>
+#include <list>
 #include <string>
 #include <iostream>
 
 int main()
 {
-    std::string str_expr = "sin x*x^3+2*x;";
+    std::string str_expr = "-sin x*x^30+23*(+x);";
     std::cout << "\nExpression at the start\n";
     std::cout << str_expr << '\n';
     if(addSpaces(str_expr) == false)
@@ -32,13 +33,31 @@ int main()
         };
 
         Expression expression(str_expr);
-        while (!expression.isEmpty())
+        std::list<Token>::iterator start, end;
+        expression.getIteratorRange(start, end);
+        while (start != end)
         {
-            std::cout << pepega[expression.getFirst().first];
+            std::cout << pepega[start->first];
             std::cout << " : ";
-            std::cout << expression.getFirst().second << '\n';
-            expression.removeFirstToken();
+            std::cout << start->second << '\n';
+            start++;
         }
+
+        if(expression.isValid())
+        {
+            std::cout << "\nExpression is Valid\n";
+            expression.infixToPostfix();
+            expression.getIteratorRange(start, end);
+            while (start != end)
+            {
+                std::cout << pepega[start->first];
+                std::cout << " : ";
+                std::cout << start->second << '\n';
+                start++;
+            }
+        }
+        else
+            std::cout << "\nExpression is Invalid\n";
     }
     else
         std::cout << "Lexical error in the expression\n";
@@ -47,7 +66,7 @@ int main()
 }
 
 /*
- 
+        3   :   ~
         9	:	sin	
         17	:	x
         14	:	*
@@ -57,8 +76,10 @@ int main()
         12	:	+
         21	:	number
         14	:	*
+        1   :   (
         17	:	x
+        2   :   )
         0	:	;
         
-        sin x * x ^ 3 + 2 * x
+        - sin x * x ^ 3 + 2 * ( + x )
  * */

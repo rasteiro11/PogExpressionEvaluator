@@ -1,4 +1,6 @@
+#include <cstdio>
 #include <string>
+#include <stack>
 #include <iostream>
 #include <utility>
 #include "definitions.h"
@@ -109,14 +111,18 @@ Expression::Expression(std::string &expression)
 void Expression::tokenizeExpression(std::string &expression)
 {
     auto iteratorExpr = expression.begin();
+    bool leading = true;
     std::string auxStr;
     AtributeValue token_id;
-    bool leading = true;
     Token new_token;
     while(iteratorExpr != expression.end())
     {
         if(*iteratorExpr == ' ')
             iteratorExpr++;
+        if(*iteratorExpr == '+' && leading)
+            iteratorExpr += 2;
+        else if(*iteratorExpr == '-' && leading)
+            *iteratorExpr = '~';
 
         do
         {
@@ -147,13 +153,18 @@ void Expression::tokenizeExpression(std::string &expression)
             else if(auxStr == ")")
                 new_token.first = rightParen;
             else if(auxStr == ";")
-            {
                 new_token.first = endExpression;
-                //iteratorExpr = expression.end();
-            }
+            else if(auxStr == "~")
+                new_token.first = unaryOp;
             else
                 new_token.first = binaryOp;
         }
+
+        if(new_token.first == leftParen || new_token.first == unaryOp ||
+           new_token.first == binaryOp)
+            leading = true;
+        else
+            leading = false;
         
         token_id = symbol_table.findAtribute(auxStr);
         if(token_id == NON_EXISTENT)
@@ -168,10 +179,78 @@ void Expression::tokenizeExpression(std::string &expression)
     }
 }
 
-bool Expression::infixToPostfix()
+ErrorCode Expression::infixToPostfix()
 {
-    /*Stub*/
-    return true;
+    std::stack<Token> delay_ops;
+    Token current, prior;
+    auto iterInfix = tokenized_expr.begin();
+    while(iterInfix->first != endExpression)
+    {
+        //std::cout << "somgoidfg\n";
+        switch (iterInfix->first)
+        {
+            case operand:
+            case number:
+                addToken(*iterInfix);
+                break;
+            case leftParen:
+                delay_ops.push(*iterInfix);
+                break;
+            case rightParen:
+                prior = delay_ops.top();
+                while (prior.first != leftParen)
+                {
+                    addToken(prior);
+                    delay_ops.pop();
+                    prior = delay_ops.top();
+                }
+                delay_ops.pop();
+                break;
+            case unaryOp:
+            case binaryOp:
+                bool end_right = false;
+                do
+                {
+                    if(delay_ops.empty()) 
+                        end_right = true;
+                    else
+                    {
+                        prior = delay_ops.top();
+                        if(prior.first == leftParen)
+                            end_right = true;
+                        else if(symbol_table.getTokenInfo(prior.second)->priority <
+                                symbol_table.getTokenInfo(iterInfix->second)->priority)
+                            end_right = true;
+                        else if(symbol_table.getTokenInfo(iterInfix->second)->priority == 6)
+                            end_right = true;
+                        else
+                            addToken(prior);
+                        if(!end_right)
+                            delay_ops.pop();
+                    }
+                }while (!end_right);
+                delay_ops.push(*iterInfix);
+                break;
+        }
+
+        iterInfix++;
+        removeFirstToken();
+        //for (auto iter : tokenized_expr)
+        //    std::cout << iter.second << ' ';        
+        //std::cout<<'\n';
+    }
+
+    while(!delay_ops.empty())
+    {
+        prior = delay_ops.top();
+        addToken(prior);
+        delay_ops.pop();
+    }
+    prior = tokenized_expr.front();
+    removeFirstToken();
+    addToken(prior);
+
+    return SUCCESS;
 }
 
 float Expression::evaluateAt(float x)
@@ -182,29 +261,68 @@ float Expression::evaluateAt(float x)
 
 void Expression::addToken(Token &new_token)
 {
-    tokenized_expr.push(new_token);
+    tokenized_expr.push_back(new_token);
 }
 
 void Expression::removeFirstToken()
 {
-    tokenized_expr.pop();
+    tokenized_expr.pop_front();
 }
 
-bool Expression::isValid()
+ErrorCode Expression::isValid()
 {
-    /*Stub*/
-    return true;
+    auto iterToken = tokenized_expr.begin();
+    int parent_count = 0;
+    bool leading = true;
+    Token_name type;
+    while (iterToken->first != endExpression)
+    {
+        type = iterToken->first;            
+        //std::cout << "Type -> " << type << '\n';
+        if(type == rightParen || type == binaryOp)
+        {
+            if(leading)
+                return FAILURE;
+        }
+        else if(!leading)
+            return FAILURE;
+
+        if(type == leftParen)
+            parent_count++;
+        else if(type == rightParen)
+        {
+            parent_count--;
+            if(parent_count < 0)
+                return FAILURE;
+        }
+        if(type == binaryOp || type == unaryOp || type == leftParen)
+            leading = true;
+        else
+            leading = false;
+
+        iterToken++;
+    }
+
+    if(leading)
+    {
+        //std::cout << "\nLeading FAILURE\n";
+        return FAILURE;
+    }
+    if(parent_count > 0)
+    {
+        //std::cout << "\nparent_count FAILURE\n";
+        return FAILURE;
+    }
+
+    return SUCCESS;
 }
 
-Token Expression::getFirst()
+void Expression::getIteratorRange(std::list<Token>::iterator &start, std::list<Token>::iterator &end) 
 {
-    return tokenized_expr.front();
+    start = tokenized_expr.begin();
+    end = tokenized_expr.end();
 }
 
-bool Expression::isEmpty()
-{
-    return tokenized_expr.empty();
-}
 
 //int main()
 //{

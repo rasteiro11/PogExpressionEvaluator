@@ -5,7 +5,6 @@
 #include "token.h"
 #define NON_EXISTENT -1
 
-using ErrorCode = bool;
 
 class Lexicon
 {
@@ -19,6 +18,3 @@ class Lexicon
         AtributeValue findAtribute(std::string &lexeme);
 };
 
-/*Autenticate lexical correctness of expression before sending to the class*/
-/*Also add whitespace to better identify lexemes*/
-ErrorCode addSpaces(std::string &expression);
