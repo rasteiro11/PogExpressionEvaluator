@@ -1,7 +1,10 @@
+#include <cmath>
 #include <cstdio>
+#include <math.h>
 #include <string>
 #include <stack>
 #include <iostream>
+#include <cmath>
 #include <utility>
 #include "definitions.h"
 #include "expression.h"
@@ -253,10 +256,53 @@ ErrorCode Expression::infixToPostfix()
     return SUCCESS;
 }
 
-float Expression::evaluateAt(float x)
+ErrorCode Expression::evaluateAt(float x,float &f_of_x)
 {
-    /*Stub*/
-    return 0.0f;
+    std::string lexeme_x = "x";
+    symbol_table.getTokenInfo(symbol_table.findAtribute(lexeme_x))->value = x;
+    float first_elem, second_elem;
+    std::stack<float> operands;
+    auto iterExpr = tokenized_expr.begin();
+    do
+    {
+        switch (iterExpr->first)
+        {
+            case unaryOp:
+                if(operands.empty())
+                    return FAILURE;
+                first_elem = operands.top();
+                operands.pop();
+                operands.push(do_unary(first_elem, iterExpr->second));
+                break;
+            case binaryOp:
+                if(operands.empty())
+                    return FAILURE;
+                second_elem = operands.top();
+                operands.pop();
+                if(operands.empty())
+                    return FAILURE;
+                first_elem = operands.top();
+                operands.pop();
+                operands.push(do_binary(first_elem,second_elem,iterExpr->second)); 
+                break;
+            case operand:
+            case number:
+                operands.push(symbol_table.getTokenInfo(iterExpr->second)->value);
+                break;
+            case endExpression:
+                break;
+        } 
+        std::cout << operands.top() << '\n';
+        iterExpr++;
+    }while (iterExpr->first != endExpression);
+
+    if(operands.empty())
+        return FAILURE;
+    f_of_x = operands.top();
+    operands.pop();
+    if(!operands.empty())
+        return FAILURE;
+    return SUCCESS;
 }
 
 void Expression::addToken(Token &new_token)
@@ -323,6 +369,52 @@ void Expression::getIteratorRange(std::list<Token>::iterator &start, std::list<T
     end = tokenized_expr.end();
 }
 
+float Expression::do_unary(float x, Token_name type)
+{
+    switch (type)
+    {
+        case 3:
+            return -x;
+        case 4:
+            return std::abs(x);
+        case 5:
+            return std::sqrt(x);
+        case 6:
+            return std::exp(x);
+        case 7:
+            return std::log(x);
+        case 8:
+            return std::log2(x);
+        case 9:
+            return std::sin(x);
+        case 10:
+            return std::cos(x);
+        case 11:
+            return std::atan(x);
+        default:
+            break;
+    }    
+    return 0.0f;
+}
+
+float Expression::do_binary(float x, float y, Token_name type)
+{
+    switch (type)
+    {
+        case 12:
+            return x + y;
+        case 13:
+            return x - y;
+        case 14:
+            return x * y;
+        case 15:
+            return x / y;
+        case 16:
+            return std::pow(x, y);
+    }
+
+    return 0.0f;
+}
 
 //int main()
 //{

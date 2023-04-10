@@ -1,6 +1,7 @@
 #include "exp/expression.h"
 #include "exp/token.h"
 #include <array>
+#include <cmath>
 #include <list>
 #include <string>
 #include <iostream>
@@ -55,6 +56,11 @@ int main()
                 std::cout << start->second << '\n';
                 start++;
             }
+            float f_of_x;
+            if(expression.evaluateAt(M_PI, f_of_x))
+                std::cout << "f(pi) = " << f_of_x << '\n';
+            else
+                std::cout << "FAZ O L\n";
         }
         else
             std::cout << "\nExpression is Invalid\n";
