@@ -1,14 +1,17 @@
 #include "exp/expression.h"
 #include "exp/token.h"
+#include "integral/integral.h"
 #include <array>
 #include <cmath>
 #include <list>
 #include <string>
 #include <iostream>
+#include <vector>
 
 int main()
 {
-    std::string str_expr = "-sin x*x^30+23*(+x);";
+    std::string str_expr = "e^(-x^2/2)/sqrt(2*pi);";
+        //"-sin x*x^30+23*(+x);";
     std::cout << "\nExpression at the start\n";
     std::cout << str_expr << '\n';
     if(addSpaces(str_expr) == false)
@@ -56,11 +59,18 @@ int main()
                 std::cout << start->second << '\n';
                 start++;
             }
-            float f_of_x;
-            if(expression.evaluateAt(M_PI, f_of_x))
-                std::cout << "f(pi) = " << f_of_x << '\n';
+            double f_of_x;
+            if(expression.evaluateAt(3.5, f_of_x))
+                std::cout << "\nf(3.5) = " << f_of_x << '\n';
             else
                 std::cout << "FAZ O L\n";
+            TrapezoidIntegral pogzinho(1.5F, 2.5F, 1, 4);
+            std::vector<double> fnTable;
+            pogzinho.calculateIntegral(expression, fnTable);
+            std::cout << "\nIntegral -> " << pogzinho.sumTraps << '\n';
+            std::cout << "ErrorRounding -> " << pogzinho.errorRounding << '\n';
+            for (auto f : fnTable)
+                std::cout << f << '\n';
         }
         else
             std::cout << "\nExpression is Invalid\n";

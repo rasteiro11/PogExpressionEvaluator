@@ -1,3 +1,4 @@
+#pragma once
 #include <queue>
 #include <list>
 #include <map>
@@ -16,7 +17,7 @@ class Expression
         Expression() = default;
         Expression(std::string &expression); //Tokenize the expression
         ErrorCode infixToPostfix(); //certify that expression is valid first
-        ErrorCode evaluateAt(float x, float &f_of_x);
+        ErrorCode evaluateAt(double x, double &f_of_x);
         void tokenizeExpression(std::string &expression);
         void getIteratorRange(std::list<Token>::iterator &start,
                               std::list<Token>::iterator &end); //comment later
@@ -24,8 +25,8 @@ class Expression
     private:
         void removeFirstToken(); //move back to private
         void addToken(Token &new_token);
-        float do_unary(float x, Token_name type);
-        float do_binary(float x, float y, Token_name type);
+        float do_unary(double x, Token_name type);
+        float do_binary(double x, double y, Token_name type);
 };
 
 /*Autenticate lexical correctness of expression before sending to the class*/

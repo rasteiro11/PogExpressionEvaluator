@@ -256,12 +256,12 @@ ErrorCode Expression::infixToPostfix()
     return SUCCESS;
 }
 
-ErrorCode Expression::evaluateAt(float x,float &f_of_x)
+ErrorCode Expression::evaluateAt(double x,double &f_of_x)
 {
     std::string lexeme_x = "x";
     symbol_table.getTokenInfo(symbol_table.findAtribute(lexeme_x))->value = x;
-    float first_elem, second_elem;
-    std::stack<float> operands;
+    double first_elem, second_elem;
+    std::stack<double> operands;
     auto iterExpr = tokenized_expr.begin();
     do
     {
@@ -292,7 +292,7 @@ ErrorCode Expression::evaluateAt(float x,float &f_of_x)
             case endExpression:
                 break;
         } 
-        std::cout << operands.top() << '\n';
+        //std::cout << operands.top() << '\n';
         iterExpr++;
     }while (iterExpr->first != endExpression);
 
@@ -369,7 +369,7 @@ void Expression::getIteratorRange(std::list<Token>::iterator &start, std::list<T
     end = tokenized_expr.end();
 }
 
-float Expression::do_unary(float x, Token_name type)
+float Expression::do_unary(double x, Token_name type)
 {
     switch (type)
     {
@@ -397,7 +397,7 @@ float Expression::do_unary(float x, Token_name type)
     return 0.0f;
 }
 
-float Expression::do_binary(float x, float y, Token_name type)
+float Expression::do_binary(double x, double y, Token_name type)
 {
     switch (type)
     {
