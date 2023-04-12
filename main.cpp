@@ -1,101 +1,112 @@
 #include "exp/expression.h"
 #include "exp/token.h"
 #include "integral/integral.h"
-#include <array>
-#include <cmath>
-#include <list>
+#include <ios>
+#include <ostream>
 #include <string>
 #include <iostream>
+#include <utility>
 #include <vector>
+#include <limits>
+#include <iomanip>
 
-int main()
-{
-    std::string str_expr = "e^(-x^2/2)/sqrt(2*pi);";
-        //"-sin x*x^30+23*(+x);";
-    std::cout << "\nExpression at the start\n";
-    std::cout << str_expr << '\n';
-    if(addSpaces(str_expr) == false)
+int main() {
+    bool quit = false;
+    bool cannot_be_conv = false;
+    std::string user_expr;
+    std::string user_info1, user_info2;
+    int numTrapz, precision;
+    double start, end;
+    std::vector<std::pair<double, double>> fnTable;
+
+    Expression *expression;
+    do
     {
-        std::cout << "\nExpression after whitespaces are added\n";
-        std::cout << str_expr << '\n';
-        //int i = 0;
-        //for (auto pog : str_expr)
-        //{
-        //    std::cout << pog << " : " << i << ';';
-        //    i++;
-        //}
-        
-        std::cout << "\nTokenized Expression\n";
-        std::array<std::string, 7> pepega = {
-            "endExpression",
-            "leftParen",
-            "rightParen",
-            "unaryOp",
-            "binaryOp",
-            "operand",
-            "number"
-        };
+        std::cout << "\nEscreva uma expressao:\n";
+        std::cout << "f(x) = ";
+        std::getline(std::cin, user_expr);
+        user_expr += ';';
+        std::endl(std::cout);
 
-        Expression expression(str_expr);
-        std::list<Token>::iterator start, end;
-        expression.getIteratorRange(start, end);
-        while (start != end)
+        if(!addSpaces(user_expr))
         {
-            std::cout << pepega[start->first];
-            std::cout << " : ";
-            std::cout << start->second << '\n';
-            start++;
-        }
-
-        if(expression.isValid())
-        {
-            std::cout << "\nExpression is Valid\n";
-            expression.infixToPostfix();
-            expression.getIteratorRange(start, end);
-            while (start != end)
+            expression = new Expression(user_expr);
+            if(expression->isValid())
             {
-                std::cout << pepega[start->first];
-                std::cout << " : ";
-                std::cout << start->second << '\n';
-                start++;
+                expression->infixToPostfix();
+                do{
+                    std::cout << "\nEscreva o ponto extremo da esquerda:\n";
+                    std::cin >> user_info1; 
+                    std::cout << "Escreva o ponto extremo da direita:\n";
+                    std::cin >> user_info2; 
+                    try{
+                        start = std::stold(user_info1.data()); 
+                        end = std::stold(user_info2.data()); 
+                        cannot_be_conv = false;
+                        user_info1.clear(), user_info2.clear();
+                    }catch (std::invalid_argument){
+                        std::cout << "Uma variavel foi escrita de forma indevida";
+                        cannot_be_conv = true;                    
+                    }
+                }while (cannot_be_conv);
+
+                do {
+                    std::cout << "\nEscreva o numero de casas decimais\n"; 
+                    std::cin >> user_info1; 
+                    std::cout << "Escreva o numero de trapezios:\n";
+                    std::cin >> user_info2; 
+                    try {
+                        precision = std::stoi(user_info1.data());
+                        numTrapz = std::stoi(user_info2.data());
+                        cannot_be_conv = false;                    
+                        user_info1.clear(), user_info2.clear();
+                    } catch (std::invalid_argument) {
+                        std::cout << "Uma variavel foi escrita de forma indevida";
+                        cannot_be_conv = true;
+                    }
+                }while (cannot_be_conv);
+
+                std::cout << std::fixed;
+                std::cout << std::setprecision(precision + 1);
+                
+                TrapezoidIntegral integralCalc(start,end,numTrapz,precision);
+                integralCalc.calculateIntegral(*expression, fnTable);
+
+                std::cout << "\n\nSaida:\n\n";
+                std::cout << "Erro de arredondamento = " << integralCalc.errorRounding;
+
+                std::cout << std::fixed;
+                std::cout << std::setprecision(precision);
+
+                std::cout << "\nValor da Integral = " << integralCalc.sumTraps;
+                std::cout << "\nTabela de Valores:\n";
+                std::cout << 'x'; 
+
+                for (int i = -1; i <= precision; i++)
+                    std::cout << ' ';
+
+                std::cout << "| " << "f(x)" << '\n';
+                for (auto f : fnTable)
+                    std::cout << f.first << " | " << f.second << '\n';
+                delete expression;
             }
-            double f_of_x;
-            if(expression.evaluateAt(3.5, f_of_x))
-                std::cout << "\nf(3.5) = " << f_of_x << '\n';
             else
-                std::cout << "FAZ O L\n";
-            TrapezoidIntegral pogzinho(1.5F, 2.5F, 1, 4);
-            std::vector<double> fnTable;
-            pogzinho.calculateIntegral(expression, fnTable);
-            std::cout << "\nIntegral -> " << pogzinho.sumTraps << '\n';
-            std::cout << "ErrorRounding -> " << pogzinho.errorRounding << '\n';
-            for (auto f : fnTable)
-                std::cout << f << '\n';
+                std::cout << "\nA expressao fornecida contem erro\n";
         }
         else
-            std::cout << "\nExpression is Invalid\n";
-    }
-    else
-        std::cout << "Lexical error in the expression\n";
+            std::cout << "\nErro Lexico detectado na expressao fornecida\n";
 
+        std::cout << "Deseja sair do programa?\n";
+        std::cout << "Sim (Escreva q)\t Nao (Escreva qualquer coisa)\n";
+        std::cin >> user_info1;
+        if(user_info1 == "q")
+            quit = true;
+
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+        user_expr.clear();
+        user_info1.clear(); 
+        std::cout << "\033[2J\033[1;1H";
+
+    }while (!quit); 
     return 0;
 }
-
-/*
-        3   :   ~
-        9	:	sin	
-        17	:	x
-        14	:	*
-        17	:	x
-        16	:	^
-        20	:	number
-        12	:	+
-        21	:	number
-        14	:	*
-        1   :   (
-        17	:	x
-        2   :   )
-        0	:	;
-        
-        - sin x * x ^ 3 + 2 * ( + x )
- * */

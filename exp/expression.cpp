@@ -27,7 +27,6 @@
 //
 /*This is Autistic as fuck*/
 
-
 inline bool isAlphabetLexeme(std::string &lexeme)
 {
    return lexeme == "x" || lexeme == "e" || lexeme == "pi" ||
@@ -109,6 +108,11 @@ Expression::Expression(std::string &expression)
 {
     symbol_table.setStandardTokens();
     tokenizeExpression(expression);
+}
+
+Expression::Expression()
+{
+    symbol_table.setStandardTokens();
 }
 
 void Expression::tokenizeExpression(std::string &expression)
@@ -415,29 +419,3 @@ float Expression::do_binary(double x, double y, Token_name type)
 
     return 0.0f;
 }
-
-//int main()
-//{
-//    std::string expr = "lg x +3*x^7 - arctan(cos x*pi*e)+sqrt x*exp x+abs x;";
-//    // "sin(x^2+3*x) + cos x*x^2"
-//    std::cout << "Before adding spaces\n";
-//    std::cout << expr << '\n';
-//    if(addSpaces(expr) == false)
-//    {
-//        std::cout << "After adding spaces\n";
-//        std::cout << expr << '\n';
-//    }
-//    else
-//    {
-//        std::cout << "Lexical Error in the Expression\n";
-//    }
-//
-//    return 0;
-//}
-
-/*
- * if is an operand put whitespace in front
- * 
- * (-b+sqrt(b^2-4*a*c))/4*a*c;
- * ( - b + sqrt ( b ^ 2 - 4 * a * c ) ) / 4 * a * c ;
- * */

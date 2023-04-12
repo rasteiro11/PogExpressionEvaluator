@@ -14,7 +14,7 @@ class Expression
     std::list<Token> tokenized_expr;
     Lexicon symbol_table;
     public:
-        Expression() = default;
+        Expression();
         Expression(std::string &expression); //Tokenize the expression
         ErrorCode infixToPostfix(); //certify that expression is valid first
         ErrorCode evaluateAt(double x, double &f_of_x);
