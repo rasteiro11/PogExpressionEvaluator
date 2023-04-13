@@ -25,7 +25,6 @@
 //        return nullptr;
 //}
 //
-/*This is Autistic as fuck*/
 
 inline bool isAlphabetLexeme(std::string &lexeme)
 {
